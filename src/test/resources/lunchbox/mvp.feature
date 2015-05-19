@@ -5,15 +5,17 @@ Feature: foobar
     And he has 1000 on his account
     And ORA is selling at 10 per share
     When he buys 100 shares of ORA
-    Then he gets a confirmation of success
-    And his account balance is 0 cash
+    Then he should get a confirmation of success
+    And his account balance should be 0
+    And portfolio should contain 100 shares of ORA
 
-#    Given an identified user
-#    And user has 100 ORA shares in his portfolio
-#    When the user sells 100 shares of ORA
-#    Then he gets a confirmation of success
-#    And his (portfolio? see definitions) is empty
-#
+  Scenario: foobar2
+    Given John Smith is identified
+    And portfolio contains 100 shares of ORA
+    When he sells 100 shares of ORA
+    Then he should get a confirmation of success
+    And portfolio should contain 0 shares of ORA
+
 #    Given an identified user
 #    When the user looks at the global game ranking
 #    Then he sees his own ranking & perf (+/- 1)
