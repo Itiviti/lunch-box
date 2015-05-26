@@ -7,6 +7,12 @@ import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import lunchbox.Authentication;
 import lunchbox.CashAccount;
+import lunchbox.LunchBox;
+import lunchbox.Portfolio;
+import lunchbox.Side;
+import lunchbox.Symbol;
+import lunchbox.Transaction;
+import lunchbox.User;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 
@@ -20,13 +26,15 @@ public class MyStepdefs
 {
     public static final String SUCCESS = "Success";
     CashAccount cashAccount = null;
-    Map<String, Integer> portfolio;
+    User identifiedUser;
+    LunchBox lunchbox = new LunchBox();
     private String result;
 
     @Given("^(.+) is identified$")
     public void user_is_identified(String user) throws Throwable
     {
-        portfolio = new HashMap<>();
+        identifiedUser = new User(user);
+        lunchbox.createPortfolio(identifiedUser);
     }
 
     @Given("^s?he has (\\d+) on (?:his|her) account$")
@@ -44,7 +52,7 @@ public class MyStepdefs
     @When("^s?he buys (\\d+) shares of (\\w+)$")
     public void buys_shares_of_instrument(int quantity, String instrument) throws Throwable
     {
-        portfolio.put(instrument, quantity);
+        getIdentifiedUserPortfolio().addTransaction(new Transaction(quantity, new Symbol(instrument), Side.BUY));
         result = SUCCESS;
     }
 
@@ -60,23 +68,36 @@ public class MyStepdefs
         assertThat(cashAccount.getBalance().getNumber().numberValue(Integer.class)).isEqualTo(amount);
     }
 
-    @And("^portfolio should contain (\\d+) shares? of (\\w+)$")
+    @And("^h(?:is|er) portfolio should contain (\\d+) shares? of (\\w+)$")
     public void portfolio_should_contain_shares(int quantity, String symbol) throws Throwable
     {
-        assertThat(portfolio.get(symbol)).isEqualTo(quantity);
+        assertThat(getIdentifiedUserPortfolio().getPosition(new Symbol(symbol)).getQuantity()).isEqualTo(quantity);
     }
 
-    @And("^portfolio contains (\\d+) shares of (\\w+)$")
-    public void portfolio_contains_shares(int quantity, String instrument) throws Throwable
+    @And("^h(?:is|er) portfolio contains (\\d+) shares of (\\w+)$")
+    public void portfolio_contains_shares(int quantity, String symbol) throws Throwable
     {
-        // Express the Regexp above with the code you wish you had
-        throw new PendingException();
+        getIdentifiedUserPortfolio().addTransaction(new Transaction(quantity, new Symbol(symbol), Side.BUY));
     }
 
     @When("^s?he sells (\\d+) shares of (\\w+)$")
-    public void he_sells_shares_of_ORA(int quantity, String instrument) throws Throwable
+    public void he_sells_shares(int quantity, String symbol) throws Throwable
     {
-        // Express the Regexp above with the code you wish you had
-        throw new PendingException();
+        getIdentifiedUserPortfolio().addTransaction(new Transaction(quantity, new Symbol(symbol), Side.SELL));
+        result = SUCCESS;
+    }
+
+    private Portfolio getIdentifiedUserPortfolio()
+    {
+        return lunchbox.getPortfolio(identifiedUser);
+    }
+
+
+    @Given("^(.+)'s portfolio contains (\\d+) shares of (\\w+)$")
+    public void user_s_portfolio_contains_shares(String user, int quantity, String symbol) throws Throwable
+    {
+        User u = new User(user);
+        lunchbox.createPortfolio(u);
+        lunchbox.getPortfolio(u).addTransaction(new Transaction(quantity, new Symbol(symbol), Side.BUY));
     }
 }

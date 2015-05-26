@@ -7,14 +7,22 @@ Feature: foobar
     When he buys 100 shares of ORA
     Then he should get a confirmation of success
     And his account balance should be 0
-    And portfolio should contain 100 shares of ORA
+    And his portfolio should contain 100 shares of ORA
 
   Scenario: foobar2
     Given John Smith is identified
-    And portfolio contains 100 shares of ORA
+    And his portfolio contains 100 shares of ORA
     When he sells 100 shares of ORA
     Then he should get a confirmation of success
-    And portfolio should contain 0 shares of ORA
+    And his portfolio should contain 0 shares of ORA
+
+  Scenario: foobar3
+    Given Jane Doe is identified
+    Given John Smith's portfolio contains 100 shares of ORA
+    Given her portfolio contains 200 shares of ORA
+    When she sells 100 shares of ORA
+    Then she should get a confirmation of success
+    And her portfolio should contain 100 shares of ORA
 
 #    Given an identified user
 #    When the user looks at the global game ranking
