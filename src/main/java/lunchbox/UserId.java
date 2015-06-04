@@ -1,10 +1,10 @@
 package lunchbox;
 
-public class User
+public class UserId
 {
     private final String name;
 
-    public User(String name)
+    public UserId(String name)
     {
         this.name = name;
     }
@@ -21,9 +21,9 @@ public class User
             return false;
         }
 
-        User user = (User) o;
+        UserId userId = (UserId) o;
 
-        return !(name != null ? !name.equals(user.name) : user.name != null);
+        return !(name != null ? !name.equals(userId.name) : userId.name != null);
 
     }
 

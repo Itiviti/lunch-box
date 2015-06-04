@@ -1,52 +1,44 @@
 package lunchbox.steps;
 
-import cucumber.api.PendingException;
+import static org.assertj.core.api.Assertions.assertThat;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import lunchbox.Authentication;
 import lunchbox.CashAccount;
+import lunchbox.InvalidTransactionException;
 import lunchbox.LunchBox;
 import lunchbox.Portfolio;
 import lunchbox.Side;
 import lunchbox.Symbol;
 import lunchbox.Transaction;
-import lunchbox.User;
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-
-import javax.money.NumberValue;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
+import lunchbox.UserId;
 
 public class MyStepdefs
 {
     public static final String SUCCESS = "Success";
-    CashAccount cashAccount = null;
-    User identifiedUser;
+    public static final String FAILURE = "Failure";
+
+    UserId identifiedUserId;
     LunchBox lunchbox = new LunchBox();
     private String result;
 
     @Given("^(.+) is identified$")
     public void user_is_identified(String user) throws Throwable
     {
-        identifiedUser = new User(user);
-        lunchbox.createPortfolio(identifiedUser);
+        identifiedUserId = lunchbox.createUser(user);
     }
 
     @Given("^s?he has (\\d+) on (?:his|her) account$")
     public void has_cash_on_account(int amount) throws Throwable
     {
-        cashAccount = new CashAccount();
+        // FIXME implement
     }
 
     @And("^(\\w+) is selling at (\\d+) per share$")
     public void instrument_is_selling_at_amount_per_share(String instrument, int price) throws Throwable
     {
-
+        // FIXME implement
     }
 
     @When("^s?he buys (\\d+) shares of (\\w+)$")
@@ -65,6 +57,7 @@ public class MyStepdefs
     @And("^h(?:is|er) account balance should be (\\d+)$")
     public void his_account_balance_is(int amount) throws Throwable
     {
+        CashAccount cashAccount = lunchbox.getCashAccount(identifiedUserId);
         assertThat(cashAccount.getBalance().getNumber().numberValue(Integer.class)).isEqualTo(amount);
     }
 
@@ -83,21 +76,32 @@ public class MyStepdefs
     @When("^s?he sells (\\d+) shares of (\\w+)$")
     public void he_sells_shares(int quantity, String symbol) throws Throwable
     {
-        getIdentifiedUserPortfolio().addTransaction(new Transaction(quantity, new Symbol(symbol), Side.SELL));
-        result = SUCCESS;
+        try
+        {
+            getIdentifiedUserPortfolio().addTransaction(new Transaction(quantity, new Symbol(symbol), Side.SELL));
+            result = SUCCESS;
+        }
+        catch (InvalidTransactionException e)
+        {
+            result = FAILURE;
+        }
     }
 
     private Portfolio getIdentifiedUserPortfolio()
     {
-        return lunchbox.getPortfolio(identifiedUser);
+        return lunchbox.getPortfolio(identifiedUserId);
     }
-
 
     @Given("^(.+)'s portfolio contains (\\d+) shares of (\\w+)$")
     public void user_s_portfolio_contains_shares(String user, int quantity, String symbol) throws Throwable
     {
-        User u = new User(user);
-        lunchbox.createPortfolio(u);
-        lunchbox.getPortfolio(u).addTransaction(new Transaction(quantity, new Symbol(symbol), Side.BUY));
+        UserId userId = lunchbox.createUser(user);
+        lunchbox.getPortfolio(userId).addTransaction(new Transaction(quantity, new Symbol(symbol), Side.BUY));
+    }
+
+    @Then("^s?he should be rejected$")
+    public void she_should_be_rejected() throws Throwable
+    {
+        assertThat(result).isEqualTo(FAILURE);
     }
 }
